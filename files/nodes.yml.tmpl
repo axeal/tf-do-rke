@@ -1,0 +1,10 @@
+nodes:
+${nodes}
+
+ssh_agent_auth: true
+
+services:
+  etcd:
+    snapshot: true
+    creation: 6h
+    retention: 24h
