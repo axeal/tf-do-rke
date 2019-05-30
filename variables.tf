@@ -1,6 +1,8 @@
-variable "do_token" {}
+variable "do_token" {
+}
 
-variable "prefix" {}
+variable "prefix" {
+}
 
 variable "region" {
   default = "fra1"
@@ -49,3 +51,4 @@ variable "image" {
 variable "ssh_keys" {
   default = []
 }
+
