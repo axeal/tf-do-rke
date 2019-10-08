@@ -17,6 +17,8 @@ helm install stable/cert-manager \
 
 kubectl -n kube-system rollout status deploy/cert-manager
 
+helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+
 helm install rancher-stable/rancher \
   --name rancher \
   --namespace cattle-system \
