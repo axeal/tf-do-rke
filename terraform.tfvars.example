@@ -5,7 +5,7 @@ do_token = "your_token"
 prefix = "myname"
 
 # Region where nodes should be created
-region_agent = "fra1"
+region = "fra1"
 
 # Count of agent nodes with role all
 count_all_nodes = "1"
@@ -20,7 +20,7 @@ count_controlplane_nodes = "0"
 count_worker_nodes = "0"
 
 # Docker version
-docker_version_server = "17.03"
+docker_version = "17.03"
 
 # Droplet sizes
 all_size = "s-2vcpu-4gb"
@@ -30,8 +30,6 @@ etcd_size = "s-2vcpu-4gb"
 controlplane_size = "s-2vcpu-4gb"
 
 worker_size = "s-2vcpu-4gb"
-
-tools_size = "s-4vcpu-8gb"
 
 # Image for nodes
 image = "ubuntu-16-04-x64"
