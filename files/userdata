@@ -1,4 +1,54 @@
-#!/bin/bash -x
+#!/bin/bash
+
+cat >/etc/sysctl.conf <<EOL
+vm.overcommit_memory=1
+kernel.panic=10
+kernel.panic_on_oops=1
+EOL
+
+sysctl -p
+
+mkdir /opt/kubernetes
+
+cat >/opt/kubernetes/admission.yaml <<EOL
+apiVersion: apiserver.k8s.io/v1alpha1
+kind: AdmissionConfiguration
+plugins:
+- name: EventRateLimit
+  path: /opt/kubernetes/event.yaml
+EOL
+
+cat >/opt/kubernetes/audit.yaml <<EOL
+apiVersion: audit.k8s.io/v1beta1
+kind: Policy
+rules:
+- level: Metadata
+EOL
+
+cat >/opt/kubernetes/encryption.yaml <<EOL
+apiVersion: v1
+kind: EncryptionConfig
+resources:
+  - resources:
+    - secrets
+    providers:
+    - aescbc:
+        keys:
+        - name: key1
+          secret: NJHuLFGMg6qkM7sgXU0OuTnu0tgM3hLtwMdXlXMKWPQ=
+    - identity: {}
+EOL
+
+cat >/opt/kubernetes/event.yaml <<EOL
+apiVersion: eventratelimit.admission.k8s.io/v1alpha1
+kind: Configuration
+limits:
+- type: Server
+  qps: 5000
+  burst: 20000
+EOL
+
+chmod 600 /opt/kubernetes/*
 
 if [ `command -v curl` ]; then
   curl -sL https://releases.rancher.com/install-docker/${docker_version}.sh | sh

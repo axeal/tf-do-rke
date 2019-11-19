@@ -3,6 +3,7 @@ set -o xtrace
 export RANCHER_TLS_SOURCE=self
 export RANCHER_VERSION=""
 export RANCHER_HOSTNAME=""
+export KUBECONFIG=kube_config_cluster.yml
 
 while test $# -gt 0; do
   case "$1" in
@@ -16,6 +17,7 @@ while test $# -gt 0; do
       echo "-H, --hostname=HOSTNAME    specify hostname for Rancher"
       echo "-v, --version=VERSION      specify version for Rancher"
       echo "-s, --secret-tls           use secret for Rancher ingress (defaults to self-signed)"
+      echo "-c, --csi-hardened         install to hardened config"
       exit 0
       ;;
     -H)
@@ -50,6 +52,10 @@ while test $# -gt 0; do
       export RANCHER_TLS_SOURCE=secret
       shift
       ;;
+    -c|--csi-hardened)
+      export KUBECONFIG=kube_config_hardened-cluster.yml
+      shift
+      ;;
     *)
       break
       ;;
@@ -68,7 +74,6 @@ else
 fi
 
 if [[ $RANCHER_TLS_SOURCE == "self" ]]; then
-  export KUBECONFIG=kube_config_cluster.yml
 
   kubectl -n kube-system create serviceaccount tiller
 
@@ -93,7 +98,6 @@ if [[ $RANCHER_TLS_SOURCE == "self" ]]; then
     --set hostname=$RANCHER_HOSTNAME \
     $RANCHER_VERSION_STRING
 else
-  export KUBECONFIG=kube_config_cluster.yml
 
   kubectl -n kube-system create serviceaccount tiller
 
