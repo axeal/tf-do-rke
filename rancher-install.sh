@@ -80,12 +80,19 @@ if [[ $RANCHER_TLS_SOURCE == "self" ]]; then
 
   kubectl -n kube-system  rollout status deploy/tiller-deploy
 
-  helm install stable/cert-manager \
-    --name cert-manager \
-    --namespace kube-system \
-    --version v0.5.2
+  kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.9/deploy/manifests/00-crds.yaml
 
-  kubectl -n kube-system rollout status deploy/cert-manager
+  kubectl create namespace cert-manager
+
+  kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+
+  helm install \
+  --name cert-manager \
+  --namespace cert-manager \
+  --version v0.9.1 \
+  jetstack/cert-manager
+
+  kubectl -n cert-manager  rollout status deploy/cert-manager
 
   helm install rancher-stable/rancher \
     --name rancher \
