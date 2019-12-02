@@ -92,7 +92,7 @@ if [[ $RANCHER_TLS_SOURCE == "self" ]]; then
   --version v0.9.1 \
   jetstack/cert-manager
 
-  kubectl -n cert-manager  rollout status deploy/cert-manager
+  kubectl wait --for=condition=Available apiservices/v1beta1.admission.certmanager.k8s.io
 
   helm install rancher-stable/rancher \
     --name rancher \
