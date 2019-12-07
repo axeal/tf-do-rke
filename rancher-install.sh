@@ -1,6 +1,6 @@
 #!/bin/bash
 set -o xtrace
-export RANCHER_TLS_SOURCE=self
+export RANCHER_TLS_SOURCE=rancher
 export RANCHER_VERSION=""
 export RANCHER_HOSTNAME=""
 
@@ -15,7 +15,7 @@ while test $# -gt 0; do
       echo "-h, --help                 show help"
       echo "-H, --hostname=HOSTNAME    specify hostname for Rancher"
       echo "-v, --version=VERSION      specify version for Rancher"
-      echo "-s, --secret-tls           use secret for Rancher ingress (defaults to self-signed)"
+      echo "-t, --tls-source=SOURCE    specify tls source for Rancher ingress rancher/letsEncrypt/secret (defaults to rancher)"
       exit 0
       ;;
     -H)
@@ -46,8 +46,18 @@ while test $# -gt 0; do
       export RANCHER_VERSION=`echo $1 | sed -e 's/^[^=]*=//g'`
       shift
       ;;
-    -s|--secret-tls)
-      export RANCHER_TLS_SOURCE=secret
+    -t)
+      shift
+      if test $# -gt 0; then
+        export RANCHER_TLS_SOURCE=$1
+      else
+        echo "no Rancher tls source specified"
+        exit 1
+      fi
+      shift
+      ;;
+    --tls-source*)
+      export RANCHER_TLS_SOURCE=`echo $1 | sed -e 's/^[^=]*=//g'`
       shift
       ;;
     *)
@@ -67,19 +77,30 @@ else
   export RANCHER_VERSION_STRING="--version $RANCHER_VERSION"
 fi
 
-if [[ $RANCHER_TLS_SOURCE == "self" ]]; then
-  export KUBECONFIG=kube_config_cluster.yml
+if [[ $RANCHER_TLS_SOURCE == "letsEncrypt" ]]; then
+  export RANCHER_TLS_STRING="--set ingress.tls.source=letsEncrypt"
+elif [[ $RANCHER_TLS_SOURCE == "rancher" ]]; then
+  export RANCHER_TLS_STRING=""
+elif [[ $RANCHER_TLS_SOURCE == "secret" ]]; then
+  export RANCHER_TLS_STRING="--set ingress.tls.source=secret"
+else
+  echo "Invalid tls source specified, must be one of rancher/letsEncrypt/secret"
+  exit 1
+fi
 
-  kubectl -n kube-system create serviceaccount tiller
+export KUBECONFIG=kube_config_cluster.yml
 
-  kubectl create clusterrolebinding tiller \
-    --clusterrole=cluster-admin \
-    --serviceaccount=kube-system:tiller
+kubectl -n kube-system create serviceaccount tiller
 
-  helm init --service-account tiller
+kubectl create clusterrolebinding tiller \
+  --clusterrole=cluster-admin \
+  --serviceaccount=kube-system:tiller
 
-  kubectl -n kube-system  rollout status deploy/tiller-deploy
+helm init --service-account tiller
 
+kubectl -n kube-system  rollout status deploy/tiller-deploy
+
+if [[ $RANCHER_TLS_SOURCE == "rancher" || $RANCHER_TLS_SOURCE == "letsEncrypt" ]]; then
   kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.9/deploy/manifests/00-crds.yaml
 
   kubectl create namespace cert-manager
@@ -98,20 +119,9 @@ if [[ $RANCHER_TLS_SOURCE == "self" ]]; then
     --name rancher \
     --namespace cattle-system \
     --set hostname=$RANCHER_HOSTNAME \
+    $RANCHER_TLS_STRING \
     $RANCHER_VERSION_STRING
 else
-  export KUBECONFIG=kube_config_cluster.yml
-
-  kubectl -n kube-system create serviceaccount tiller
-
-  kubectl create clusterrolebinding tiller \
-    --clusterrole=cluster-admin \
-    --serviceaccount=kube-system:tiller
-
-  helm init --service-account tiller
-
-  kubectl -n kube-system  rollout status deploy/tiller-deploy
-
   kubectl create namespace cattle-system
   kubectl -n cattle-system create secret generic tls-ca --from-file=./certs/cacerts.pem
   kubectl -n cattle-system create secret tls tls-rancher-ingress --cert=./certs/cert.pem --key=./certs/key.pem
@@ -121,6 +131,6 @@ else
     --namespace cattle-system \
     --set hostname=$RANCHER_HOSTNAME \
     $RANCHER_VERSION_STRING \
-    --set ingress.tls.source=secret \
+    $RANCHER_TLS_STRING \
     --set privateCA=true
 fi

@@ -26,7 +26,11 @@ All available options/variables are described in [terraform.tfvars.example](http
 
 - Run `./rancher-install.sh -H <rancher hostname> -v <version string>` where <rancher hostname> is the URL for the rancher server and <version string> is a version string of the format 2.2.8 for example.
 
+### letsEncrypt certificates
+
+- Run `./rancher-install.sh -H <rancher hostname> -v <version string> -t letsEncrypt` where <rancher hostname> is the URL for the rancher server and <version string> is a version string of the format 2.2.8 for example.
+
 ### Custom certificates
 
 - Run `./certs.sh <rancher hostname>` where <rancher hostname> is the URL for the rancher server for which to generate certificates.
-- Run `./rancher-install.sh -H <rancher hostname> -v <version string> -s` where <rancher hostname> is the URL for the rancher server and <version string> is a version string of the format 2.2.8 for example.
+- Run `./rancher-install.sh -H <rancher hostname> -v <version string> -t secret` where <rancher hostname> is the URL for the rancher server and <version string> is a version string of the format 2.2.8 for example.
