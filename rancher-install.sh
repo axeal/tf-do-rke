@@ -90,15 +90,9 @@ fi
 
 export KUBECONFIG=kube_config_cluster.yml
 
-kubectl -n kube-system create serviceaccount tiller
+helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
 
-kubectl create clusterrolebinding tiller \
-  --clusterrole=cluster-admin \
-  --serviceaccount=kube-system:tiller
-
-helm init --service-account tiller
-
-kubectl -n kube-system  rollout status deploy/tiller-deploy
+kubectl create namespace cattle-system
 
 if [[ $RANCHER_TLS_SOURCE == "rancher" || $RANCHER_TLS_SOURCE == "letsEncrypt" ]]; then
   kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.9/deploy/manifests/00-crds.yaml
@@ -107,16 +101,17 @@ if [[ $RANCHER_TLS_SOURCE == "rancher" || $RANCHER_TLS_SOURCE == "letsEncrypt" ]
 
   kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
 
-  helm install \
-  --name cert-manager \
+  helm repo add jetstack https://charts.jetstack.io
+
+  helm repo update
+
+  helm install cert-manager jetstack/cert-manager \
   --namespace cert-manager \
-  --version v0.9.1 \
-  jetstack/cert-manager
+  --version v0.9.1
 
   kubectl wait --for=condition=Available apiservices/v1beta1.admission.certmanager.k8s.io
 
-  helm install rancher-stable/rancher \
-    --name rancher \
+  helm install rancher rancher-stable/rancher \
     --namespace cattle-system \
     --set hostname=$RANCHER_HOSTNAME \
     $RANCHER_TLS_STRING \
@@ -126,8 +121,9 @@ else
   kubectl -n cattle-system create secret generic tls-ca --from-file=./certs/cacerts.pem
   kubectl -n cattle-system create secret tls tls-rancher-ingress --cert=./certs/cert.pem --key=./certs/key.pem
 
-  helm install rancher-latest/rancher \
-    --name rancher \
+
+
+  helm install rancher rancher-latest/rancher \
     --namespace cattle-system \
     --set hostname=$RANCHER_HOSTNAME \
     $RANCHER_VERSION_STRING \
