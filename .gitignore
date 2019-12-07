@@ -11,3 +11,4 @@
 *.rkestate
 
 **/certs/*
+ssh_config

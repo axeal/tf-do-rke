@@ -1,0 +1,28 @@
+%{ for index, ip in rke-all ~}
+Host ${prefix}-rke-all-${index}
+  HostName ${ip}
+  User root
+  StrictHostKeyChecking no
+
+%{ endfor ~}
+%{ for index, ip in rke-etcd ~}
+Host ${prefix}-rke-etcd-${index}
+  HostName ${ip}
+  User root
+  StrictHostKeyChecking no
+
+%{ endfor ~}
+%{ for index, ip in rke-controlplane ~}
+Host ${prefix}-rke-controlplane-${index}
+  HostName ${ip}
+  User root
+  StrictHostKeyChecking no
+
+%{ endfor ~}
+%{ for index, ip in rke-worker ~}
+Host ${prefix}-rke-worker-${index}
+  HostName ${ip}
+  User root
+  StrictHostKeyChecking no
+
+%{ endfor ~}
