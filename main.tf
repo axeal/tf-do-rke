@@ -109,6 +109,17 @@ resource "local_file" "rke-config" {
   filename = "${path.module}/cluster.yml"
 }
 
+resource "local_file" "ssh_config" {
+  content  = templatefile("${path.module}/files/ssh_config.tmpl", {
+    prefix                    = var.prefix
+    rke-all          = [for node in digitalocean_droplet.rke-all: node.ipv4_address],
+    rke-etcd         = [for node in digitalocean_droplet.rke-etcd: node.ipv4_address],
+    rke-controlplane = [for node in digitalocean_droplet.rke-controlplane: node.ipv4_address],
+    rke-worker       = [for node in digitalocean_droplet.rke-worker: node.ipv4_address],
+  })
+  filename = "${path.module}/ssh_config"
+}
+
 resource "null_resource" "rke-state" {
   provisioner "local-exec" {
     when = destroy
@@ -118,3 +129,18 @@ resource "null_resource" "rke-state" {
   }
 }
 
+output "rke-all-nodes" {
+  value = [for node in digitalocean_droplet.rke-all: {name=node.name, ip=node.ipv4_address}]
+}
+
+output "rke-etcd-nodes" {
+  value = [for node in digitalocean_droplet.rke-etcd: {name=node.name, ip=node.ipv4_address}]
+}
+
+output "rke-controlplane-nodes" {
+  value = [for node in digitalocean_droplet.rke-controlplane: {name=node.name, ip=node.ipv4_address}]
+}
+
+output "rke-worker-nodes" {
+  value = [for node in digitalocean_droplet.rke-worker: {name=node.name, ip=node.ipv4_address}]
+}

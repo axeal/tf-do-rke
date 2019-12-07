@@ -6,6 +6,7 @@ This Terraform setup will:
 
 - Provision Digital Ocean droplets and install the Docker daemon on these
 - Create a cluster.yml configuration file containing those droplets to enable provisioning a Kubernetes clusters with [Rancher Kubernetes Engine (RKE)](https://rancher.com/docs/rke/latest/en/)
+- Create an ssh_config file in the terraform module directory for connecting to the droplets
 
 ## Other options
 
@@ -34,3 +35,11 @@ All available options/variables are described in [terraform.tfvars.example](http
 
 - Run `./certs.sh <rancher hostname>` where <rancher hostname> is the URL for the rancher server for which to generate certificates.
 - Run `./rancher-install.sh -H <rancher hostname> -v <version string> -t secret` where <rancher hostname> is the URL for the rancher server and <version string> is a version string of the format 2.2.8 for example.
+
+## SSH Config
+
+You can use the use the auto-generated ssh_config file to connect to the droplets by droplet name, e.g. `ssh <prefix>-rke-0-all` or `ssh <prefix>-rke-1-etcd` etc. To do so, you have two options:
+
+1. Add an `Include` directive at the top of the SSH config file in your home directory (`~/.ssh/config`) to include the ssh_config file at the location you have checked out the this repository, e.g. `Include ~/git/tf-do-rke/ssh_config`.
+
+2. Specify the ssh_config file when invoking `ssh` via the `-F` option, e.g. `ssh -F ~/git/tf-do-rke/ssh_config <host>`.
