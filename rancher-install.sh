@@ -123,7 +123,7 @@ else
 
 
 
-  helm install rancher rancher-latest/rancher \
+  helm install rancher rancher-stable/rancher \
     --namespace cattle-system \
     --set hostname=$RANCHER_HOSTNAME \
     $RANCHER_VERSION_STRING \
