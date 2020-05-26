@@ -11,7 +11,7 @@ data "template_file" "userdata" {
   }
 }
 
-data "digitalocean_account" "account" {
+data "digitalocean_account" "do-account" {
 }
 
 resource "digitalocean_droplet" "rke-all" {
@@ -22,7 +22,7 @@ resource "digitalocean_droplet" "rke-all" {
   size      = var.all_size
   user_data = data.template_file.userdata.rendered
   ssh_keys  = var.ssh_keys
-  tags      = [replace(split("@",data.digitalocean_account.account.email)[0],".","-")]
+  tags      = [join("",["user:",replace(split("@",data.digitalocean_account.do-account.email)[0],".","-")])]
 }
 
 resource "digitalocean_droplet" "rke-etcd" {
@@ -33,7 +33,7 @@ resource "digitalocean_droplet" "rke-etcd" {
   size      = var.etcd_size
   user_data = data.template_file.userdata.rendered
   ssh_keys  = var.ssh_keys
-  tags      = [replace(split("@",data.digitalocean_account.account.email)[0],".","-")]
+  tags      = [join("",["user:",replace(split("@",data.digitalocean_account.do-account.email)[0],".","-")])]
 }
 
 resource "digitalocean_droplet" "rke-controlplane" {
@@ -44,7 +44,7 @@ resource "digitalocean_droplet" "rke-controlplane" {
   size      = var.controlplane_size
   user_data = data.template_file.userdata.rendered
   ssh_keys  = var.ssh_keys
-  tags      = [replace(split("@",data.digitalocean_account.account.email)[0],".","-")]
+  tags      = [join("",["user:",replace(split("@",data.digitalocean_account.do-account.email)[0],".","-")])]
 }
 
 resource "digitalocean_droplet" "rke-worker" {
@@ -55,7 +55,7 @@ resource "digitalocean_droplet" "rke-worker" {
   size      = var.worker_size
   user_data = data.template_file.userdata.rendered
   ssh_keys  = var.ssh_keys
-  tags      = [replace(split("@",data.digitalocean_account.account.email)[0],".","-")]
+  tags      = [join("",["user:",replace(split("@",data.digitalocean_account.do-account.email)[0],".","-")])]
 }
 
 data "template_file" "all_nodes" {
