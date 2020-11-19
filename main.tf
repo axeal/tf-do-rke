@@ -15,47 +15,59 @@ data "digitalocean_account" "do-account" {
 }
 
 resource "digitalocean_droplet" "rke-all" {
-  count     = var.count_all_nodes
-  image     = var.image
-  name      = "${var.prefix}-rke-all-${count.index}"
-  region    = var.region
-  size      = var.all_size
-  user_data = data.template_file.userdata.rendered
-  ssh_keys  = var.ssh_keys
-  tags      = [join("",["user:",replace(split("@",data.digitalocean_account.do-account.email)[0],".","-")])]
+  count              = var.count_all_nodes
+  image              = var.image
+  name               = "${var.prefix}-rke-all-${count.index}"
+  private_networking = true
+  region             = var.region
+  size               = var.all_size
+  user_data          = data.template_file.userdata.rendered
+  ssh_keys           = var.ssh_keys
+  tags               = [join("", ["user:", replace(split("@", data.digitalocean_account.do-account.email)[0], ".", "-")])]
 }
 
 resource "digitalocean_droplet" "rke-etcd" {
-  count     = var.count_etcd_nodes
-  image     = var.image
-  name      = "${var.prefix}-rke-etcd-${count.index}"
-  region    = var.region
-  size      = var.etcd_size
-  user_data = data.template_file.userdata.rendered
-  ssh_keys  = var.ssh_keys
-  tags      = [join("",["user:",replace(split("@",data.digitalocean_account.do-account.email)[0],".","-")])]
+  count              = var.count_etcd_nodes
+  image              = var.image
+  name               = "${var.prefix}-rke-etcd-${count.index}"
+  private_networking = true
+  region             = var.region
+  size               = var.etcd_size
+  user_data          = data.template_file.userdata.rendered
+  ssh_keys           = var.ssh_keys
+  tags               = [join("", ["user:", replace(split("@", data.digitalocean_account.do-account.email)[0], ".", "-")])]
 }
 
 resource "digitalocean_droplet" "rke-controlplane" {
-  count     = var.count_controlplane_nodes
-  image     = var.image
-  name      = "${var.prefix}-rke-controlplane-${count.index}"
-  region    = var.region
-  size      = var.controlplane_size
-  user_data = data.template_file.userdata.rendered
-  ssh_keys  = var.ssh_keys
-  tags      = [join("",["user:",replace(split("@",data.digitalocean_account.do-account.email)[0],".","-")])]
+  count              = var.count_controlplane_nodes
+  image              = var.image
+  name               = "${var.prefix}-rke-controlplane-${count.index}"
+  private_networking = true
+  region             = var.region
+  size               = var.controlplane_size
+  user_data          = data.template_file.userdata.rendered
+  ssh_keys           = var.ssh_keys
+  tags               = [join("", ["user:", replace(split("@", data.digitalocean_account.do-account.email)[0], ".", "-")])]
 }
 
 resource "digitalocean_droplet" "rke-worker" {
-  count     = var.count_worker_nodes
-  image     = var.image
-  name      = "${var.prefix}-rke-worker-${count.index}"
-  region    = var.region
-  size      = var.worker_size
-  user_data = data.template_file.userdata.rendered
-  ssh_keys  = var.ssh_keys
-  tags      = [join("",["user:",replace(split("@",data.digitalocean_account.do-account.email)[0],".","-")])]
+  count              = var.count_worker_nodes
+  image              = var.image
+  name               = "${var.prefix}-rke-worker-${count.index}"
+  private_networking = true
+  region             = var.region
+  size               = var.worker_size
+  user_data          = data.template_file.userdata.rendered
+  ssh_keys           = var.ssh_keys
+  tags               = [join("", ["user:", replace(split("@", data.digitalocean_account.do-account.email)[0], ".", "-")])]
+}
+
+resource "digitalocean_record" "dns" {
+  domain = var.digitalocean_domain
+  type   = "A"
+  ttl    = 30
+  name   = "${var.prefix}-tf-do-rke"
+  value  = digitalocean_droplet.rke-all[0].ipv4_address
 }
 
 data "template_file" "all_nodes" {
@@ -117,12 +129,12 @@ resource "local_file" "rke-config" {
 }
 
 resource "local_file" "ssh_config" {
-  content  = templatefile("${path.module}/files/ssh_config.tmpl", {
-    prefix                    = var.prefix
-    rke-all          = [for node in digitalocean_droplet.rke-all: node.ipv4_address],
-    rke-etcd         = [for node in digitalocean_droplet.rke-etcd: node.ipv4_address],
-    rke-controlplane = [for node in digitalocean_droplet.rke-controlplane: node.ipv4_address],
-    rke-worker       = [for node in digitalocean_droplet.rke-worker: node.ipv4_address],
+  content = templatefile("${path.module}/files/ssh_config.tmpl", {
+    prefix           = var.prefix
+    rke-all          = [for node in digitalocean_droplet.rke-all : node.ipv4_address],
+    rke-etcd         = [for node in digitalocean_droplet.rke-etcd : node.ipv4_address],
+    rke-controlplane = [for node in digitalocean_droplet.rke-controlplane : node.ipv4_address],
+    rke-worker       = [for node in digitalocean_droplet.rke-worker : node.ipv4_address],
   })
   filename = "${path.module}/ssh_config"
 }
@@ -137,17 +149,21 @@ resource "null_resource" "rke-state" {
 }
 
 output "rke-all-nodes" {
-  value = [for node in digitalocean_droplet.rke-all: {name=node.name, ip=node.ipv4_address}]
+  value = [for node in digitalocean_droplet.rke-all : { name = node.name, ip = node.ipv4_address }]
 }
 
 output "rke-etcd-nodes" {
-  value = [for node in digitalocean_droplet.rke-etcd: {name=node.name, ip=node.ipv4_address}]
+  value = [for node in digitalocean_droplet.rke-etcd : { name = node.name, ip = node.ipv4_address }]
 }
 
 output "rke-controlplane-nodes" {
-  value = [for node in digitalocean_droplet.rke-controlplane: {name=node.name, ip=node.ipv4_address}]
+  value = [for node in digitalocean_droplet.rke-controlplane : { name = node.name, ip = node.ipv4_address }]
 }
 
 output "rke-worker-nodes" {
-  value = [for node in digitalocean_droplet.rke-worker: {name=node.name, ip=node.ipv4_address}]
+  value = [for node in digitalocean_droplet.rke-worker : { name = node.name, ip = node.ipv4_address }]
+}
+
+output "rancher-hostname" {
+  value = "${var.prefix}-tf-do-rke.${var.digitalocean_domain}"
 }

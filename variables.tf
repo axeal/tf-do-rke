@@ -52,3 +52,6 @@ variable "ssh_keys" {
   default = []
 }
 
+variable "digitalocean_domain" {
+}
+
