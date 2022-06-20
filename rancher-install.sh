@@ -92,36 +92,34 @@ export KUBECONFIG=kube_config_cluster.yml
 
 helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
 
-kubectl create namespace cattle-system
+kubectl rollout status daemonset -n ingress-nginx nginx-ingress-controller
 
 if [[ $RANCHER_TLS_SOURCE == "rancher" || $RANCHER_TLS_SOURCE == "letsEncrypt" ]]; then
-  kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.9/deploy/manifests/00-crds.yaml
-
-  kubectl create namespace cert-manager
-
-  kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
 
   helm repo add jetstack https://charts.jetstack.io
 
   helm repo update
 
-  helm install cert-manager jetstack/cert-manager \
+  helm upgrade --install cert-manager jetstack/cert-manager \
   --namespace cert-manager \
-  --version v0.9.1
+  --create-namespace \
+  --version v1.5.1 \
+  --set installCRDs=true
 
-  kubectl wait --for=condition=Available apiservices/v1beta1.admission.certmanager.k8s.io
+  kubectl wait --for=condition=Available -n cert-manager deployment cert-manager-webhook
 
-  helm install rancher rancher-stable/rancher \
+  helm upgrade --install rancher rancher-stable/rancher \
     --namespace cattle-system \
+    --create-namespace \
     --set hostname=$RANCHER_HOSTNAME \
     $RANCHER_TLS_STRING \
     $RANCHER_VERSION_STRING
+
 else
+
   kubectl create namespace cattle-system
   kubectl -n cattle-system create secret generic tls-ca --from-file=./certs/cacerts.pem
   kubectl -n cattle-system create secret tls tls-rancher-ingress --cert=./certs/cert.pem --key=./certs/key.pem
-
-
 
   helm install rancher rancher-stable/rancher \
     --namespace cattle-system \
@@ -129,4 +127,5 @@ else
     $RANCHER_VERSION_STRING \
     $RANCHER_TLS_STRING \
     --set privateCA=true
+
 fi
