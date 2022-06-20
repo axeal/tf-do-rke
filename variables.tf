@@ -25,7 +25,7 @@ variable "count_worker_nodes" {
 }
 
 variable "docker_version" {
-  default = "17.03"
+  default = "19.03"
 }
 
 variable "all_size" {
