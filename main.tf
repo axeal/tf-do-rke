@@ -14,11 +14,16 @@ data "template_file" "userdata" {
 data "digitalocean_account" "do-account" {
 }
 
+resource "digitalocean_vpc" "droplets-network" {
+  name        = "${var.prefix}-tf-do-rke-droplets-vpc"
+  region      = var.region
+}
+
 resource "digitalocean_droplet" "rke-all" {
   count              = var.count_all_nodes
   image              = var.image
   name               = "${var.prefix}-rke-all-${count.index}"
-  private_networking = true
+  vpc_uuid           = digitalocean_vpc.droplets-network.id
   region             = var.region
   size               = var.all_size
   user_data          = data.template_file.userdata.rendered
@@ -30,7 +35,7 @@ resource "digitalocean_droplet" "rke-etcd" {
   count              = var.count_etcd_nodes
   image              = var.image
   name               = "${var.prefix}-rke-etcd-${count.index}"
-  private_networking = true
+  vpc_uuid           = digitalocean_vpc.droplets-network.id
   region             = var.region
   size               = var.etcd_size
   user_data          = data.template_file.userdata.rendered
@@ -42,7 +47,7 @@ resource "digitalocean_droplet" "rke-controlplane" {
   count              = var.count_controlplane_nodes
   image              = var.image
   name               = "${var.prefix}-rke-controlplane-${count.index}"
-  private_networking = true
+  vpc_uuid           = digitalocean_vpc.droplets-network.id
   region             = var.region
   size               = var.controlplane_size
   user_data          = data.template_file.userdata.rendered
@@ -54,7 +59,7 @@ resource "digitalocean_droplet" "rke-worker" {
   count              = var.count_worker_nodes
   image              = var.image
   name               = "${var.prefix}-rke-worker-${count.index}"
-  private_networking = true
+  vpc_uuid           = digitalocean_vpc.droplets-network.id
   region             = var.region
   size               = var.worker_size
   user_data          = data.template_file.userdata.rendered
