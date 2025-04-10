@@ -5,6 +5,13 @@ Host ${prefix}-rke-all-${index}
   StrictHostKeyChecking no
 
 %{ endfor ~}
+%{ for index, ip in rke-master ~}
+Host ${prefix}-rke-master-${index}
+  HostName ${ip}
+  User root
+  StrictHostKeyChecking no
+
+%{ endfor ~}
 %{ for index, ip in rke-etcd ~}
 Host ${prefix}-rke-etcd-${index}
   HostName ${ip}

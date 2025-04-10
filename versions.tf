@@ -11,8 +11,8 @@ terraform {
     null = {
       source = "hashicorp/null"
     }
-    template = {
-      source = "hashicorp/template"
+    time = {
+      source = "hashicorp/time"
     }
   }
 }

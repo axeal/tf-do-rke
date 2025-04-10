@@ -1,5 +1,29 @@
 nodes:
-${nodes}
+%{ for index, ip in rke-all ~}
+- address: ${ip}
+  user: root
+  role: [controlplane,etcd,worker]
+%{ endfor ~}
+%{ for index, ip in rke-master ~}
+- address: ${ip}
+  user: root
+  role: [controlplane,etcd]
+%{ endfor ~}
+%{ for index, ip in rke-etcd ~}
+- address: ${ip}
+  user: root
+  role: [etcd]
+%{ endfor ~}
+%{ for index, ip in rke-controlplane ~}
+- address: ${ip}
+  user: root
+  role: [controlplane]
+%{ endfor ~}
+%{ for index, ip in rke-worker ~}
+- address: ${ip}
+  user: root
+  role: [worker]
+%{ endfor ~}
 
 ssh_agent_auth: true
 

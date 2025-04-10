@@ -12,6 +12,10 @@ variable "count_all_nodes" {
   default = "1"
 }
 
+variable "count_master_nodes" {
+  default = "1"
+}
+
 variable "count_etcd_nodes" {
   default = "0"
 }
@@ -29,6 +33,10 @@ variable "docker_version" {
 }
 
 variable "all_size" {
+  default = "s-2vcpu-4gb"
+}
+
+variable "master_size" {
   default = "s-2vcpu-4gb"
 }
 
@@ -54,4 +62,3 @@ variable "ssh_keys" {
 
 variable "digitalocean_domain" {
 }
-

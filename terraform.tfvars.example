@@ -10,6 +10,9 @@ region = "fra1"
 # Count of agent nodes with role all
 count_all_nodes = "1"
 
+# Count of agent nodes with controlplane and etcd roles
+count_master_nodes = "0"
+
 # Count of agent nodes with role etcd
 count_etcd_nodes = "0"
 
@@ -24,6 +27,8 @@ docker_version = "17.03"
 
 # Droplet sizes
 all_size = "s-2vcpu-4gb"
+
+master_size = "s-2vcpu-4gb"
 
 etcd_size = "s-2vcpu-4gb"
 
