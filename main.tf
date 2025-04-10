@@ -96,7 +96,7 @@ resource "digitalocean_record" "dns" {
   type   = "A"
   ttl    = 30
   name   = "${var.prefix}-tf-do-rke"
-  value  = digitalocean_droplet.rke-all[0].ipv4_address
+  value  = var.count_all_nodes > 0 ? digitalocean_droplet.rke-all[0].ipv4_address : digitalocean_droplet.rke-worker[0].ipv4_address
 }
 
 resource "local_file" "rke-config" {
@@ -132,23 +132,23 @@ resource "null_resource" "rke-state" {
 }
 
 output "rke-all-nodes" {
-  value = var.count_all_nodes ? [for node in digitalocean_droplet.rke-all : { name = node.name, ip = node.ipv4_address }] : null
+  value = var.count_all_nodes > 0 ? [for node in digitalocean_droplet.rke-all : { name = node.name, ip = node.ipv4_address }] : null
 }
 
 output "rke-master-nodes" {
-  value = var.count_master_nodes ? [for node in digitalocean_droplet.rke-master : { name = node.name, ip = node.ipv4_address }] : null
+  value = var.count_master_nodes > 0 ? [for node in digitalocean_droplet.rke-master : { name = node.name, ip = node.ipv4_address }] : null
 }
 
 output "rke-etcd-nodes" {
-  value = var.count_etcd_nodes ? [for node in digitalocean_droplet.rke-etcd : { name = node.name, ip = node.ipv4_address }] : null
+  value = var.count_etcd_nodes > 0 ? [for node in digitalocean_droplet.rke-etcd : { name = node.name, ip = node.ipv4_address }] : null
 }
 
 output "rke-controlplane-nodes" {
-  value = var.count_controlplane_nodes ? [for node in digitalocean_droplet.rke-controlplane : { name = node.name, ip = node.ipv4_address }] : null
+  value = var.count_controlplane_nodes > 0 ? [for node in digitalocean_droplet.rke-controlplane : { name = node.name, ip = node.ipv4_address }] : null
 }
 
 output "rke-worker-nodes" {
-  value = var.count_worker_nodes ? [for node in digitalocean_droplet.rke-worker : { name = node.name, ip = node.ipv4_address }] : null
+  value = var.count_worker_nodes > 0 ? [for node in digitalocean_droplet.rke-worker : { name = node.name, ip = node.ipv4_address }] : null
 }
 
 output "rancher-hostname" {
