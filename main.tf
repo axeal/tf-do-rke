@@ -132,7 +132,7 @@ resource "null_resource" "rke-state" {
 }
 
 output "rke-all-nodes" {
-  value =  var.count_all_nodes ?[for node in digitalocean_droplet.rke-all : { name = node.name, ip = node.ipv4_address }] : null
+  value = var.count_all_nodes ? [for node in digitalocean_droplet.rke-all : { name = node.name, ip = node.ipv4_address }] : null
 }
 
 output "rke-master-nodes" {
